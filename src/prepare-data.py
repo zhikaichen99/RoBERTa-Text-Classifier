@@ -3,6 +3,7 @@ import os
 
 import argparse
 import subprocess
+import sys
 
 from datetime import datetime
 from sklearn.model_selection import train_test_split
@@ -25,12 +26,6 @@ tokenizer = RobertaTokenizer.from_pretrained(PRE_TRAINED_MODEL_NAME, do_lower_ca
 def parse_args():
     parser = argparse.ArgumentParser(description='Process')
 
-    parser.add_argument('--input-data', type=str,
-        default='/opt/ml/processing/input/data',
-    )
-    parser.add_argument('--output-data', type=str,
-        default='/opt/ml/processing/output',
-    )
     parser.add_argument('--train-split-percentage', type=float,
         default=0.90,
     )
@@ -102,7 +97,7 @@ if __name__ == "__main__":
 
     input_data_path = os.path.join('/opt/ml/processing/input/data', 'Womens Clothing E-Commerce Reviews.csv')
 
-    df = pd.read(input_data_path, index_col = 0)
+    df = pd.read_csv(input_data_path, index_col = 0)
     df = pd.DataFrame(data = df, columns = columns)
 
     # remove null values in dataset
@@ -110,7 +105,7 @@ if __name__ == "__main__":
     df = df.reset_index(drop = True)
 
     # Convert the star rating in the dataset into sentiments
-    df['sentiment'] = df['star_rating'].apply(lambda rating: convert_to_sentiment(rating))
+    df['sentiment'] = df['Rating'].apply(lambda rating: convert_to_sentiment(rating))
 
     # Convert review into bert embedding
     df['input_ids'] = df['Review Text'].apply(lambda review: convert_to_bert_format(review, args.max_seq_length))
