@@ -2,11 +2,14 @@ import pandas as pd
 import os
 
 import argparse
+import subprocess
 
 from datetime import datetime
 from sklearn.model_selection import train_test_split
-from transformers import RobertaTokenizer
 
+subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==3.5.1"])
+
+from transformers import RobertaTokenizer
 
 columns = ['review_id', 'sentiment', 'date', 'label_ids', 'input_ids', 'review_body']
 
