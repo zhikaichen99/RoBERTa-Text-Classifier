@@ -1,14 +1,24 @@
+from sklearn.model_selection import train_test_split
+
 import pandas as pd
+import argparse
+import subprocess
+import sys
 import os
+import glob
+from pathlib import Path
+import time
+import boto3
 
 import argparse
 import subprocess
 import sys
 
 from datetime import datetime
-from sklearn.model_selection import train_test_split
 
-subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==3.5.1"])
+
+subprocess.check_call([sys.executable, "-m", "conda", "install", "-c", "pytorch", "pytorch", "-y"])
+subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers"])
 
 from transformers import RobertaTokenizer
 
@@ -133,6 +143,7 @@ if __name__ == "__main__":
     timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
     df['date'] = timestamp
 
+
     # Split data into train, test, and validation set
 
     # Split into training and holdout set
@@ -141,11 +152,16 @@ if __name__ == "__main__":
 
     # Split the holdout set into test and validation set
     test_size = args.test_split_percentage / holdout_size
-    df_validation, df_test = train_test_split(df_holdout, test_size = test_size, stratify = df['sentiment'])
+    df_validation, df_test = train_test_split(df_holdout, test_size = test_size, stratify = df_holdout['sentiment'])
 
     df_train = df_train.reset_index(drop = True)
     df_validation = df_validation.reset_index(drop = True)
     df_test = df_test.reset_index(drop = True)
+
+    # Convert object types to string
+    df_train = object_to_string(df_train)
+    df_validation = object_to_string(df_validation)
+    df_test = object_to_string(df_test)
 
     # write data to tsv file
     train_file_path = os.path.join('/opt/ml/processing/output/train', 'training_data.csv')
@@ -155,6 +171,7 @@ if __name__ == "__main__":
     df_train.to_csv(train_file_path)
     df_validation.to_csv(validation_file_path)
     df_test.to_csv(test_file_path)
+
 
     
     
