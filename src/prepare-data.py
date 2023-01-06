@@ -8,7 +8,7 @@ import os
 import glob
 from pathlib import Path
 import time
-import boto3
+
 
 import argparse
 import subprocess
@@ -19,6 +19,7 @@ from datetime import datetime
 
 subprocess.check_call([sys.executable, "-m", "conda", "install", "-c", "pytorch", "pytorch", "-y"])
 subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers"])
+
 
 from transformers import RobertaTokenizer
 
@@ -48,6 +49,9 @@ def parse_args():
     )    
     parser.add_argument('--max-seq-length', type=int, 
         default=128
+    )
+    parser.add_argument('--output-data', type = str,
+        default = '/opt/ml/processing/output',
     )
     return parser.parse_args()
 
@@ -164,13 +168,13 @@ if __name__ == "__main__":
     df_test = object_to_string(df_test)
 
     # write data to tsv file
-    train_file_path = os.path.join('/opt/ml/processing/output/train', 'training_data.csv')
-    validation_file_path = os.path.join('/opt/ml/processing/output/validation', 'validation_data.csv')
-    test_file_path = os.path.join('/opt/ml/processing/output/test', 'test_data.csv')
+    train_file_path = '{}/sentiment/train'.format(args.output_data)
+    validation_file_path = '{}/sentiment/validation'.format(args.output_data)
+    test_file_path = '{}/sentiment/test'.format(args.output_data)
 
-    df_train.to_csv(train_file_path)
-    df_validation.to_csv(validation_file_path)
-    df_test.to_csv(test_file_path)
+    df_train.to_csv('{}/train.csv'.format(train_file_path))
+    df_validation.to_csv('{}/validation.csv'.format(validation_file_path))
+    df_test.to_csv('{}/test.csv'.format(test_file_path))
 
 
     
