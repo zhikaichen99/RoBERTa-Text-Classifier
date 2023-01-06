@@ -12,8 +12,6 @@ subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==3.
 
 from transformers import RobertaTokenizer
 
-columns = ['review_id', 'sentiment', 'date', 'label_ids', 'input_ids', 'review_body']
-
 PRE_TRAINED_MODEL_NAME = 'roberta-base'
 
 # Load roBERTa tokenize
@@ -98,11 +96,12 @@ if __name__ == "__main__":
     input_data_path = os.path.join('/opt/ml/processing/input/data', 'Womens Clothing E-Commerce Reviews.csv')
 
     df = pd.read_csv(input_data_path, index_col = 0)
-    df = pd.DataFrame(data = df, columns = columns)
+    df = pd.DataFrame(data = df)
 
     # remove null values in dataset
     df = df.dropna()
     df = df.reset_index(drop = True)
+
 
     # Convert the star rating in the dataset into sentiments
     df['sentiment'] = df['Rating'].apply(lambda rating: convert_to_sentiment(rating))
