@@ -12,6 +12,7 @@ from transformers import RobertaForSequenceClassification
 from transformers import AdaW, get_linear_schedule_with_warmup
 
 import argparse
+import os
 import subprocess
 import sys
 
@@ -156,4 +157,18 @@ if __name__ == '__main__':
         config = config
     )
 
-    
+    model = train_model(model, train_data_loader, validation_data_loader, args)
+
+    # Save models
+    os.makedirs(output_dir, exist_ok = True)
+    output_dir = args.model_dir
+
+    # Save transformer model
+    transformer_path = '{}/transformer'.format(output_dir)
+    os.makedirs(transformer_path, exist_ok = True)
+    model.save_pretrained(transformer_path)
+
+    # Save model pytorch model
+    MODEL_NAME = 'model.pth'
+    save_path = os.path.join(output_dir, MODEL_NAME)
+    torch.save(model.state_dict(), save_path)
