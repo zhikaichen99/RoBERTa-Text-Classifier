@@ -64,62 +64,26 @@ def parse_args():
 
 
 
-MODEL_NAME = 'model.pth'
+# Using PyTorch Dataset
 
-PRE_TRAINED_MODEL_NAME = 'roberta-base'
-
-def configure_model():
-    classes = [-1, 0 ,1]
-    # Initializing RoBERTA configuration
-    config = RobertaConfig.from_pretrained(
-        PRE_TRAINED_MODEL_NAME,
-        num_labels = len(classes)
-
-        id2label = {
-            0: -1,
-            1: 0,
-            2: 1,
-        },
-        label2id = {
-            -1: 0,
-            0: 1,
-            1: 2,
-        }
-    )
-    config.output_attentions = True
+class ReviewDataset(Dataset):
+    # initialization function
+    def __init__(self, input_ids_list, label_ids_list):
+        self.input_ids_list = input_ids_list
+        self.label_ids_list = label_ids_list
     
-    return config
+    # Length Method. Determine how large the dataset is
+    def __len__(self):
+        return len(self.input_ids_list)
 
-def create_data_loader(data_file, batch_size):
-    """
-    Make batches of the dataset. Each element of the batches is a tuple that contains
-    input_ids, attention_mask, and labels
-    """
-    df = pd.read_csv(data_file, usecols = ['input_ids', 'label_ids'])
+    # Get Item Method
+    def __getitem__(self, item):
+        # Convert list of input_ids into an array of PyTorch LongTensors
+        input_ids = json.loads(self.input_ids_list[item])
+        label_ids = self.label_ids_list[item]
 
-    ds = 
+        input_ids_tensor = torch.LongTensor(input_ids)
+        label_ids_tensor = torch.tensor(label_ids, dtype = torch.long)
 
+        return input_ids_tensor, label_ids_tensor
 
-def train_model(model, train_data_loader, df_train, validation_data_loader, df_validation, args):
-
-    loss_function = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(params = model.parameters(), lr = args.learning_rate)
-
-    if args.freeze_bert_layer:
-        for name, param in model.named_parameters():
-            if 'classifier' not in name:
-                param.requires_grad = False
-
-    train_correct = 0
-    train_total = 0
-
-    for epoch in range(args.epochs):
-        for i, (sent, label) in enumerate(train_data_loader):
-            if i < args.train_steps_per_epoch:
-                model.train()
-                optimizer.zero_grad()
-                sent = sent.squeeze(0)
-                if torch.cuda.is_available():
-                    sent = sent.cuda()
-                    label = label.cuda()
-                output = model(sent)[0]
