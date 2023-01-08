@@ -87,3 +87,12 @@ class ReviewDataset(Dataset):
 
         return input_ids_tensor, label_ids_tensor
 
+def create_data_loader(data, batch_size):
+
+    return DataLoader(data,
+                      batch_size = batch_size,
+                      shuffle = True,
+                      drop_last = True
+                     )
+
+def train_model(model, train_data_loader, validation_data_loader, args):
