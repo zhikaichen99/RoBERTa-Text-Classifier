@@ -9,12 +9,12 @@ from torch.utils.data import Dataset, DataLoader
 
 from transformers import RobertaModel, RobertaConfig
 from transformers import RobertaForSequenceClassification
-from transformers import AdaW, get_linear_schedule_with_warmup
+from transformers import AdamW, get_linear_schedule_with_warmup
 
 import argparse
 import os
-import subprocess
-import sys
+import pandas as pd
+import glob
 
 
 def parse_args():
@@ -127,8 +127,12 @@ if __name__ == '__main__':
     # Parse Arguments
     args = parse_args()
 
-    train = args.train_data
-    validation = args.validation_data
+    train_file = glob.glob('{}/*.csv'.format(args.train_data))
+    validation_file = glob.glob('{}/*csv'.format(args.validation_data))
+
+    
+    train = pd.read_csv(train_file)
+    validation = pd.read_csv(args.validation_file)
 
     train_input_ids = train.input_ids.to_numpy()
     train_label_ids = train.label_ids.to_numpy()
