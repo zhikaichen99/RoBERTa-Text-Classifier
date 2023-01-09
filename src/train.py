@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
 import torch.utils.data.distributed
-from torch.utils.data import Dataset, DataLoaded
+from torch.utils.data import Dataset, DataLoader
 
 from transformers import RobertaModel, RobertaConfig
 from transformers import RobertaForSequenceClassification
@@ -148,7 +148,7 @@ if __name__ == '__main__':
         'roberta-base',
         num_labels = 3,
         id2label = {0:-1, 1:0, 2:1},
-        label2id = {-1:0, 0:1, 1:2}
+        label2id = {-1:0, 0:1, 1:2},
         output_attention = True
     )
 
