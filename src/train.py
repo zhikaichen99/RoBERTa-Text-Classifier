@@ -15,6 +15,7 @@ import argparse
 import os
 import pandas as pd
 import glob
+import json
 
 
 def parse_args():
@@ -36,6 +37,7 @@ def parse_args():
     parser.add_argument('--model_dir', type = str, default = os.environ['SM_MODEL_DIR'])
     parser.add_argument('--validation_data', type = str, default = os.environ['SM_CHANNEL_VALIDATION'])
     parser.add_argument('--train_data', type = str, default = os.environ['SM_CHANNEL_TRAIN'])
+    parser.add_argument('--output_dir', type = 'str', default = os.environ['SM_OUTPUT_DIR'])
     
     return parser.parse_args()
 
@@ -73,9 +75,6 @@ def create_data_loader(data, batch_size):
 def train_model(model, train_data_loader, validation_data_loader, args):
     loss_function = nn.CrossEntropyLoss()
     optimizer = optim.Adam(params = model.parameters(), lr = args.learning_rate)
-
-    train_correct = 0
-    train_total = 0
 
     # Looping over each epoch
     for epoch in range(args.epoch):
@@ -127,12 +126,13 @@ if __name__ == '__main__':
     # Parse Arguments
     args = parse_args()
 
-    train_file = glob.glob('{}/*.csv'.format(args.train_data))
-    validation_file = glob.glob('{}/*csv'.format(args.validation_data))
 
+
+    training_file = glob.glob('{}/*.csv'.format(args.train_data))[0]
+    validation_file = glob.glob('{}/*.csv'.format(args.validation_data))[0]
     
-    train = pd.read_csv(train_file)
-    validation = pd.read_csv(args.validation_file)
+    train = pd.read_csv(training_file)
+    validation = pd.read_csv(training_file)
 
     train_input_ids = train.input_ids.to_numpy()
     train_label_ids = train.label_ids.to_numpy()
@@ -164,15 +164,16 @@ if __name__ == '__main__':
     model = train_model(model, train_data_loader, validation_data_loader, args)
 
     # Save models
-    os.makedirs(output_dir, exist_ok = True)
-    output_dir = args.model_dir
+    output_path = args.model_dir
+    os.makedirs(output_path, exist_ok = True)
+    
 
     # Save transformer model
-    transformer_path = '{}/transformer'.format(output_dir)
+    transformer_path = '{}/transformer'.format(output_path)
     os.makedirs(transformer_path, exist_ok = True)
     model.save_pretrained(transformer_path)
 
     # Save model pytorch model
     MODEL_NAME = 'model.pth'
-    save_path = os.path.join(output_dir, MODEL_NAME)
+    save_path = os.path.join(output_path, MODEL_NAME)
     torch.save(model.state_dict(), save_path)
