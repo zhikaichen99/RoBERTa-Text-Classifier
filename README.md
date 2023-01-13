@@ -21,5 +21,7 @@ This module is designed to predict the sentiment of a product review. The classi
 │   ├── prepare-data.py                           # Script to preprocess the data for model training
 │   ├── train.py                                  # Model training script
 │   └── requirements.txt                          # Libraries required for this repository
+├── data
+│   ├── Womens Clothing E-Commerce Reviews.csv    # Raw text data
 ```
 
