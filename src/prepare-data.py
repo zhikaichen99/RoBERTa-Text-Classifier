@@ -9,17 +9,14 @@ import glob
 from pathlib import Path
 import time
 
-
 import argparse
 import subprocess
 import sys
 
 from datetime import datetime
 
-
 subprocess.check_call([sys.executable, "-m", "conda", "install", "-c", "pytorch", "pytorch", "-y"])
 subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers"])
-
 
 from transformers import RobertaTokenizer
 
@@ -33,8 +30,17 @@ tokenizer = RobertaTokenizer.from_pretrained(PRE_TRAINED_MODEL_NAME, do_lower_ca
 
 # Parse Arguments
 def parse_args():
+    """
+    This function parses the arguments to the script from the jupyter notebook cell.
+    Input:
+        None
+    Output: 
+        parser.parse_args()
+    """
+    # Create an ArgumentParser object 
     parser = argparse.ArgumentParser(description='Process')
 
+    # Add the jupyter notebook cell arguments with their corresponding data types and default values
     parser.add_argument('--train-split-percentage', type=float,
         default=0.90,
     )
@@ -53,17 +59,39 @@ def parse_args():
     parser.add_argument('--output-data', type = str,
         default = '/opt/ml/processing/output',
     )
+
+    # Parse the arguments and return the ArgumentParser object
     return parser.parse_args()
 
 # Convert object data types to string
 def object_to_string(dataframe):
+    """
+    This function converts the data types in given pandas dataframe to string data types
+    
+    Input:
+        dataframe: the pandas dataframe we are working with
+    Output:
+        dataframe: the same pandas dataframe, however columns are now string types
+    """
+    # Loop through each column in the dataframe
     for column in dataframe.columns:
+        # check if the column is of object data type
         if dataframe.dtypes[column] == 'object':
+            # convert the column to string type
             dataframe[column] = dataframe[column].astype('str').astype('string')
+    # return the converted dataframe
     return dataframe
 
 # Convert star rating into sentiment. Function will be used in processing data
 def convert_to_sentiment(rating):
+    """
+    Converts a numerica rating to a sentiment label
+
+    Input:
+        rating: A numeric rating between 1 and 5
+    Output:
+        int: a sentiment where -1 represents negative sentiment, 0 represents neutral, and 1 represents positive
+    """
     if rating in {1,2}:
         return -1
     if rating == 3:
@@ -73,6 +101,14 @@ def convert_to_sentiment(rating):
 
 # Sentiment to label id
 def convert_sentiment_labelid(sentiment):
+    """
+    Convert sentiment label to Integer ID
+
+    Input:
+        sentiment: Sentiment label (-1 for negative, 0 for neutral, 1 for positive)
+    Output:
+        int: Integer ID (0 for negative, 1 for neutral, 2 for positive)
+    """
     if sentiment == -1:
         return 0
     if sentiment == 0:
@@ -84,10 +120,20 @@ def convert_sentiment_labelid(sentiment):
 # Function to convert text to required formatting
 def convert_to_bert_format(text, max_seq_length):
     """
+    Converts the input text to the BERT format by encoding the text using the BERT tokenizer
+    and returning the input IDs as a flattened list
+
     We need to perform the following steps to our text data:
     1. Add special tokens to the start and end of each sentence.
     2. Pad & Truncate all sentences to a single constant length
     3. Differentiate real tokens from padding tokens with the 'attention mask'.
+
+    Input:
+        text: Input text to be encoded
+        max_seq_length: integer value indicating the longest number of tokens we want processed.
+    Output:
+        list[int]: Flattened list of input IDs for the encoded text in the BERT format
+
     """
     encode_plus = tokenizer.encode_plus(
         text,                         # Text to encode 
@@ -146,9 +192,6 @@ if __name__ == "__main__":
     # Adding date feature into column to keep track of the data
     timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
     df['date'] = timestamp
-
-
-    # Split data into train, test, and validation set
 
     # Split into training and holdout set
     holdout_size = 1 - args.train_split_percentage
